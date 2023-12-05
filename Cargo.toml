@@ -1,10 +1,10 @@
 [package]
-name = "webhooks"
+name = "huxta"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "webhooks"
+name = "huxta"
 path = "src/bin/shuttle-bin.rs"
 
 [dependencies]
