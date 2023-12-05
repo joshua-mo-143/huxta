@@ -1,6 +1,6 @@
+use huxta::routes::router::{init_router, AppState};
 use sqlx::PgPool;
 use std::net::SocketAddr;
-use webhooks::{init_router, AppState};
 
 pub struct CustomService {
     db: PgPool,
@@ -16,7 +16,10 @@ async fn main(
 #[shuttle_runtime::async_trait]
 impl shuttle_runtime::Service for CustomService {
     async fn bind(mut self, addr: SocketAddr) -> Result<(), shuttle_runtime::Error> {
-        let state = AppState { db: self.db, ctx: reqwest::Client::new() };
+        let state = AppState {
+            db: self.db,
+            ctx: reqwest::Client::new(),
+        };
         let router = init_router(state);
 
         let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();

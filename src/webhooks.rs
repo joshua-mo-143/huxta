@@ -64,7 +64,7 @@ where
             Err(e) => {
                 println!("Error while getting json: {e}");
                 None
-            },
+            }
         };
 
         let webhook_request = WebhookRequest {
