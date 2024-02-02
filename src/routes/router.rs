@@ -12,9 +12,19 @@ pub struct AppState {
     pub ctx: Client,
 }
 
+impl AppState {
+    pub fn new(db: PgPool) -> Self {
+        Self {
+            db,
+            ctx: reqwest::Client::new()
+        }
+    }
+}
+
 pub fn init_router(state: AppState) -> Router {
     Router::new()
         .route("/webhooks", any(webhooks::webhook))
+        .route("/webhook_history", any(webhooks::webhook_history))
         .route("/redirect", post(webhooks::redirected))
         .with_state(state)
 }

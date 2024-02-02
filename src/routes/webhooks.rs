@@ -4,8 +4,22 @@ use axum::{
     extract::State,
     response::{IntoResponse, Redirect},
     Json,
+    http::StatusCode,
 };
+use serde::Serialize;
+use crate::webhooks::{HttpMethod, HttpVersion};
+use chrono::{DateTime, Utc};
 
+#[derive(sqlx::FromRow, Serialize)]
+pub struct WebhookJson {
+    id: i32,
+    method: HttpMethod,
+    origin: String,
+    version: HttpVersion,
+    headers: serde_json::Value,
+    request_body: Option<serde_json::Value>,
+    created_at: DateTime<Utc>
+}
 pub async fn redirected(Webhook(request): Webhook) -> impl IntoResponse {
     Json(request)
 }
@@ -26,14 +40,29 @@ pub async fn webhook(
                 $1, $2, $3, $4, $5
                 )",
     )
-    .bind(request.method.clone())
-    .bind(request.origin.clone())
-    .bind(request.version.clone())
-    .bind(request.headers.clone())
-    .bind(request.body.clone())
+    .bind(request.method())
+    .bind(request.origin())
+    .bind(request.version())
+    .bind(request.headers())
+    .bind(request.body())
     .execute(&state.db)
     .await
     .unwrap();
 
     Redirect::temporary("/redirect")
+}
+
+pub async fn webhook_history(
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let res = match sqlx::query_as::<_, WebhookJson>("SELECT * FROM REQUESTS")
+        .fetch_all(&state.db)
+        .await {
+        Ok(res) => res,
+        Err(e) => return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        };
+
+    Ok(Json(res))
+
+
 }

@@ -4,7 +4,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Map};
+use serde_json::{json, Map, Value};
 
 pub struct Webhook(pub WebhookRequest);
 
@@ -13,8 +13,30 @@ pub struct WebhookRequest {
     pub method: HttpMethod,
     pub origin: String,
     pub version: HttpVersion,
-    pub headers: serde_json::Value,
-    pub body: Option<serde_json::Value>,
+    pub headers: Value,
+    pub body: Option<Value>,
+}
+
+impl<'a> WebhookRequest {
+    pub fn method(&'a self) -> &'a HttpMethod {
+        &self.method
+    }
+
+    pub fn origin(&'a self) -> &'a str {
+        &self.origin
+    } 
+
+    pub fn version(&'a self) -> &'a HttpVersion {
+        &self.version
+    } 
+
+    pub fn headers(&'a self) -> &'a Value {
+        &self.headers
+    } 
+
+    pub fn body(&'a self) -> &'a Option<Value> {
+        &self.body
+    } 
 }
 
 #[async_trait::async_trait]
